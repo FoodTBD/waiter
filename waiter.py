@@ -13,6 +13,10 @@ CORS(app, support_credentials=True)
 @app.route("/get_food_matches_from_string", methods=['POST'])
 @cross_origin(supports_credentials=True)
 def get_food_matches_from_string():
+    """
+    Receives an easyocr results array, parses and performs a search of the db
+    :return: a list of possible food matches
+    """
     if request.method == 'POST':
         menu_str = json.loads(request.data)
         # parse menu string
