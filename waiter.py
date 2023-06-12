@@ -41,16 +41,23 @@ def get_food_matches_from_string():
                 box_coords_str_list = b.split(',')
                 bounding_box_list.append([float(box_coords_str_list[0].strip()), float(box_coords_str_list[1].strip())])
             menu_items.append((bounding_box_list, food_name, conf_level))
+        food_matches = search_fooddb(menu_items, .5)
+    return json.dumps(food_matches)
+
+@app.route("/get_food_matches_from_image", methods=['POST'])
+@cross_origin(supports_credentials=True)
+def get_food_matches_from_image():
+    """
+    Receives the image file and the desired lists of translation languages, runs the image through the
+    ocr and then finds the food matches
+    :return: list of food matches
+    """
+    if request.method == 'POST':
+        image = request.files['file']
+        image_path = './snapshots/' + image.filename
+        # save image to local snapshots directory for easy ocr
+        image.save(image_path)
+        lang_list = request.form['lang_list'].replace(' ', '').split(',')
+        menu_items = get_easyocr_results(image_path, lang_list)
         food_matches = search_fooddb(menu_items, .4)
     return food_matches
-
-# @app.route("/get_food_matches_from_image", methods=['POST'])
-# @cross_origin(supports_credentials=True)
-# def get_food_matches_from_image():
-#     if request.method == 'POST':
-#         request_data = json.loads(request.data)
-#         image = request_data['image']
-#         lang_list = request_data['lang_list']
-#         menu_items = get_easyocr_results(image, lang_list)
-#         food_matches = search_fooddb(menu_items, .4)
-#     return food_matches
