@@ -18,7 +18,9 @@ def get_food_matches_from_string():
     :return: a list of possible food matches
     """
     if request.method == 'POST':
-        menu_str = json.loads(request.data)
+        req_data = json.loads(request.data)
+        menu_str = req_data['searchText']
+        levenshtein_ratio = float(req_data['levenshteinRatio'])
         # parse menu string
         items = re.split('\((.*?)\)', menu_str)
         del items[0] # remove '['
@@ -41,7 +43,8 @@ def get_food_matches_from_string():
                 box_coords_str_list = b.split(',')
                 bounding_box_list.append([float(box_coords_str_list[0].strip()), float(box_coords_str_list[1].strip())])
             menu_items.append((bounding_box_list, food_name, conf_level))
-        food_matches = search_fooddb(menu_items, .5)
+        food_matches = search_fooddb(menu_items, levenshtein_ratio)
+        print(f'Found {len(food_matches)} matches')
     return json.dumps(food_matches)
 
 @app.route("/get_food_matches_from_image", methods=['POST'])
@@ -58,6 +61,8 @@ def get_food_matches_from_image():
         # save image to local snapshots directory for easy ocr
         image.save(image_path)
         lang_list = request.form['lang_list'].replace(' ', '').split(',')
+        print('Running {image.filename} through EasyOCR')
         menu_items = get_easyocr_results(image_path, lang_list)
+        print('Searching DB...')
         food_matches = search_fooddb(menu_items, .4)
     return food_matches
