@@ -3,7 +3,7 @@ import json
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from ocr import get_easyocr_results
-from query import search_fooddb
+from query import search_algolia, search_fooddb
 import re
 
 app = Flask(__name__)
@@ -43,9 +43,10 @@ def get_food_matches_from_string():
                 box_coords_str_list = b.split(',')
                 bounding_box_list.append([float(box_coords_str_list[0].strip()), float(box_coords_str_list[1].strip())])
             menu_items.append((bounding_box_list, food_name, conf_level))
-        food_matches = search_fooddb(menu_items, levenshtein_ratio)
+        # food_matches = search_fooddb(menu_items, levenshtein_ratio)
+        food_matches = search_algolia(menu_items)
         print(f'Found {len(food_matches)} matches')
-    return json.dumps(food_matches)
+    return json.dumps({'matches': food_matches})
 
 @app.route("/get_food_matches_from_image", methods=['POST'])
 @cross_origin(supports_credentials=True)
