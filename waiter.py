@@ -20,7 +20,7 @@ def get_food_matches_from_string():
     if request.method == 'POST':
         req_data = json.loads(request.data)
         menu_str = req_data['searchText']
-        levenshtein_ratio = float(req_data['levenshteinRatio'])
+        # levenshtein_ratio = float(req_data['levenshteinRatio'])
         # parse menu string
         items = re.split('\((.*?)\)', menu_str)
         del items[0] # remove '['
@@ -62,8 +62,9 @@ def get_food_matches_from_image():
         # save image to local snapshots directory for easy ocr
         image.save(image_path)
         lang_list = request.form['lang_list'].replace(' ', '').split(',')
-        print('Running {image.filename} through EasyOCR')
+        print(f'Running {image.filename} through EasyOCR')
         menu_items = get_easyocr_results(image_path, lang_list)
         print('Searching DB...')
-        food_matches = search_fooddb(menu_items, .4)
-    return food_matches
+        food_matches = search_algolia(menu_items)
+        print(f'Found {len(food_matches)} matches')
+    return json.dumps({'matches': food_matches})
