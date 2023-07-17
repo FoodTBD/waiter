@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import easyocr
 
 def get_easyocr_results(img_path, lang_list):

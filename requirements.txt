@@ -1,0 +1,5 @@
+Flask==2.3.2
+werkzeug==2.3.4
+Flask-Cors==4.0.0
+algoliasearch==3.0.0
+Levenshtein==0.21.1

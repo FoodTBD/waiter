@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import json
 
 from flask import Flask, request
@@ -8,6 +10,14 @@ import re
 
 app = Flask(__name__)
 CORS(app, support_credentials=True)
+
+@app.route("/hello", methods=['GET'])
+def hello():
+    """
+    for testing aws cluster
+    :return:
+    """
+    return {'Hello': 'This is an flask rest API deployed in ECS'}
 
 
 @app.route("/get_food_matches_from_string", methods=['POST'])
