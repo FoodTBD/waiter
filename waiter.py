@@ -78,3 +78,18 @@ def get_food_matches_from_image():
         food_matches = search_algolia(menu_items)
         print(f'Found {len(food_matches)} matches')
     return json.dumps({'matches': food_matches})
+
+
+@app.route("/search_db/<search_string>", methods=['GET'])
+@cross_origin(supports_credentials=True)
+def search_db(search_string):
+    """
+    Receives the image file and the desired lists of translation languages, runs the image through the
+    ocr and then finds the food matches
+    :return: list of food matches
+    """
+    if request.method == 'GET':
+        print(f'Searching DB for .. {search_string}')
+        food_matches = search_algolia([search_string])
+        print(f'Found {len(food_matches)} matches')
+    return json.dumps({'matches': food_matches})
