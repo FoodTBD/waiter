@@ -5,7 +5,7 @@ import json
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from ocr import get_easyocr_results
-from query import search_algolia, search_fooddb
+from query import bulk_search_algolia, search_algolia, search_fooddb
 import re
 
 app = Flask(__name__)
@@ -54,7 +54,7 @@ def get_food_matches_from_string():
                 bounding_box_list.append([float(box_coords_str_list[0].strip()), float(box_coords_str_list[1].strip())])
             menu_items.append((bounding_box_list, food_name, conf_level))
         # food_matches = search_fooddb(menu_items, levenshtein_ratio)
-        food_matches = search_algolia(menu_items)
+        food_matches = bulk_search_algolia(menu_items)
         print(f'Found {len(food_matches)} matches')
     return json.dumps({'matches': food_matches})
 
@@ -75,7 +75,7 @@ def get_food_matches_from_image():
         print(f'Running {image.filename} through EasyOCR')
         menu_items = get_easyocr_results(image_path, lang_list)
         print('Searching DB...')
-        food_matches = search_algolia(menu_items)
+        food_matches = bulk_search_algolia(menu_items)
         print(f'Found {len(food_matches)} matches')
     return json.dumps({'matches': food_matches})
 
@@ -84,8 +84,7 @@ def get_food_matches_from_image():
 @cross_origin(supports_credentials=True)
 def search_db(search_string):
     """
-    Receives the image file and the desired lists of translation languages, runs the image through the
-    ocr and then finds the food matches
+    Search the db using a string input
     :return: list of food matches
     """
     if request.method == 'GET':
