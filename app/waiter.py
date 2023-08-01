@@ -1,15 +1,22 @@
 #!/usr/bin/env python
 
+import connexion
 import json
+import logging
+import re
 
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from ocr import get_easyocr_results
 from query import bulk_search_algolia, search_algolia, search_fooddb
-import re
 
-app = Flask(__name__)
-CORS(app, support_credentials=True)
+
+logging.basicConfig(level=logging.DEBUG)
+
+app = connexion.FlaskApp(__name__)
+app.add_api("api.yaml")
+
+CORS(app.app, support_credentials=True)
 
 @app.route("/hello", methods=['GET'])
 def hello():
@@ -68,8 +75,8 @@ def get_food_matches_from_image():
     """
     if request.method == 'POST':
         image = request.files['file']
-        image_path = './snapshots/' + image.filename
-        # save image to local snapshots directory for easy ocr
+        image_path = './images/' + image.filename
+        # save image to local images directory for easy ocr
         image.save(image_path)
         lang_list = request.form['lang_list'].replace(' ', '').split(',')
         print(f'Running {image.filename} through EasyOCR')
@@ -92,3 +99,7 @@ def search_db(search_string):
         food_matches = search_algolia([search_string])
         print(f'Found {len(food_matches)} matches')
     return json.dumps({'matches': food_matches})
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=8001)

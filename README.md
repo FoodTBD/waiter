@@ -1,24 +1,30 @@
-# To run app locally
-$ python3 -m venv .venv
+# backend
 
-$ . .venv/bin/activate
+This project implements the FoodTBD Data API, which provides access to restaurant menu and dish data.
 
-$ flask --app waiter run
+We use [OpenAPI Specification 3](https://learn.openapis.org/introduction) to spec the API. The file `api.yaml` contains the full API description.
 
-# To run docker compose
-Make sure docker daemon is running (open -a Docker)
-$ docker compose up
+## Developing
 
-# To create docker image
-https://docs.docker.com/language/python/run-containers/
+### Setting up virtual environment
 
-$ docker build -t waiter-server:latest .
+    python3 -m venv env
 
-$ docker tag waiter-server:latest 826534809592.dkr.ecr.us-east-1.amazonaws.com/waiter-ecr:latest
+    source env/bin/activate
+    pip install -r requirements.txt
 
-$ aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 826534809592.dkr.ecr.us-east-1.amazonaws.com
 
-$ docker push 826534809592.dkr.ecr.us-east-1.amazonaws.com/waiter-ecr:latest
+### Running locally
 
-$ docker run --publish 8000:5000 waiter-server 
-The 8000 port can be replaced with something else
+    source env/bin/activate
+    python main.py
+
+Go to http://localhost:5000/ui/ to see the interactive API documentation.
+
+
+## Building and Running in Docker
+
+    docker build -t foodtbd_backend .
+    docker run -p 80:80 foodtbd_backend
+
+Go to http://localhost/ui/ to see the interactive API documentation.

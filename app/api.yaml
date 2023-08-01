@@ -1,0 +1,743 @@
+openapi: 3.0.0
+info:
+  title: FoodTBD Data API
+  version: 0.0.1
+  description: |-
+    This is the specification for the FoodTBD Data API, which provides access to restaurant menu and dish data.
+
+    Language codes MUST be given as [IETF BCP 47 language tags](https://en.wikipedia.org/wiki/IETF_language_tag). Hint: Use `"zh-Hans"` for Simplified Chinese and `"zh-Hant"` for Traditional Chinese.
+
+servers:
+  - url: http://localhost:5000/
+    description: Local development server
+
+tags:
+  - name: dish
+    description: A *Dish* represents an orderable unit of food.
+  - name: dishPhoto
+    description: A *Dish* can have zero and more photos associated with it.
+  - name: menu
+    description: A *Menu* is associated with a physical place, typically a restaurant or café, and has a collection of *Dish* objects.
+  - name: menuPhoto
+    description: A *Menu* can have zero and more photos associated with it.
+  - name: search
+    description: Convenience endpoint, returning heterogenous types.
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: api.health.search
+      description: Check the status of the service.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                example:
+                  status: OK
+
+  /dishes:
+    get:
+      tags:
+        - dish
+      summary: Find dishes
+      operationId: api.dishes.search
+      parameters:
+        - name: name
+          in: query
+          description: The name of the dish to search for (can be partial)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dish'
+    post:
+      tags:
+        - dish
+      summary: Add a new dish
+      operationId: api.dishes.post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DishInput'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+  /dishes/{dishId}:
+    get:
+      tags:
+        - dish
+      summary: Get details of a specific dish, including dish photos
+      operationId: api.dishes.get
+      parameters:
+        - name: dishId
+          in: path
+          description: ID of the dish to retrieve
+          required: true
+          schema:
+            type: string
+            example: "dish_1"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+        '404':
+          description: Not Found
+    put:
+      tags:
+        - dish
+      summary: Edit an existing dish
+      operationId: api.dishes.put
+      parameters:
+        - name: dishId
+          in: path
+          description: ID of the dish to edit
+          required: true
+          schema:
+            type: string
+            example: "dish_1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DishInput'
+      responses:
+        '204':
+          description: Edit Successful
+        '404':
+          description: Not Found
+    delete:
+      tags:
+        - dish
+      summary: Delete an existing dish
+      operationId: api.dishes.delete
+      parameters:
+        - name: dishId
+          in: path
+          description: ID of the dish to delete
+          required: true
+          schema:
+            type: string
+            example: "dish_1"
+      responses:
+        '204':
+          description: Delete Successful
+        '404':
+          description: Not Found
+  /dishes/{dishId}/dishPhotos:
+    post:
+      tags:
+        - dishPhoto
+      summary: Submit a photo of a dish
+      operationId: api.dishPhotos.post
+      parameters:
+        - name: dishId
+          in: path
+          description: The ID of the dish to which the photo belongs
+          required: true
+          schema:
+            type: string
+            example: "dish_1"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photoData:
+                  type: string
+                  format: binary
+                  description: Photo data, in JPEG format
+              required:
+                - photoData
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+  /dishes/{dishId}/dishPhotos/{dishPhotoId}:
+    delete:
+      tags:
+        - dishPhoto
+      summary: Delete a stored dish photo
+      operationId: api.dishPhotos.delete
+      parameters:
+        - name: dishId
+          in: path
+          description: ID of the dish that is associated with the photo
+          required: true
+          schema:
+            type: string
+            example: "dish_1"
+        - name: dishPhotoId
+          in: path
+          description: ID of the photo to delete
+          required: true
+          schema:
+            type: string
+            example: "dishPhoto_1"
+      responses:
+        '204':
+          description: Delete Successful
+        '404':
+          description: Not Found
+
+  /menus:
+    get:
+      tags:
+        - menu
+      summary: Find menus
+      operationId: api.menus.search
+      parameters:
+        - name: dishName
+          in: query
+          description: The name of the dish to search for in menus (can be partial)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Menu'
+    post:
+      tags:
+        - menu
+      summary: Add a new menu
+      operationId: api.menus.post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuInput'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+  /menus/{menuId}:
+    get:
+      tags:
+        - menu
+      summary: Get details of a specific menu
+      operationId: api.menus.get
+      parameters:
+        - name: menuId
+          in: path
+          description: ID of the menu to get
+          required: true
+          schema:
+            type: string
+            example: "menu_1"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Menu'
+        '404':
+          description: Not Found
+    put:
+      tags:
+        - menu
+      summary: Edit an existing menu
+      operationId: api.menus.put
+      parameters:
+        - name: menuId
+          in: path
+          description: ID of the menu to edit
+          required: true
+          schema:
+            type: string
+            example: "menu_1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuInput'
+      responses:
+        '204':
+          description: Edit Successful
+        '404':
+          description: Not Found
+    delete:
+      tags:
+        - menu
+      summary: Delete an existing menu
+      operationId: api.menus.delete
+      parameters:
+        - name: menuId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "menu_1"
+      responses:
+        '204':
+          description: Delete Successful
+        '404':
+          description: Not Found
+
+  /menuPhotos:
+    get:
+      tags:
+        - menuPhoto
+      summary: Find menu photos
+      operationId: api.menuPhotos.search
+      parameters:
+        - name: menuId
+          in: query
+          description: ID of the menu that is associated with the photo
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuPhoto"
+    post:
+      tags:
+        - menuPhoto
+      summary: Submit a photo of a menu (for processing)
+      operationId: api.menuPhotos.post
+      parameters:
+        - name: googleMapsPlaceId
+          in: query
+          description: The ID of the place to which the photo belongs
+          required: true
+          schema:
+            type: string
+            example: "placeId_xxx"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/MenuPhotoInput"
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+  /menuPhotos/{menuPhotoId}:
+    delete:
+      tags:
+        - menuPhoto
+      summary: Delete a stored menu photo
+      operationId: api.menuPhotos.delete
+      parameters:
+        - name: menuPhotoId
+          in: path
+          description: ID of the photo to delete
+          required: true
+          schema:
+            type: string
+            example: "menuPhoto_1"
+      responses:
+        '204':
+          description: Delete Successful
+        '404':
+          description: Not Found
+
+  /search:
+    get:
+      tags:
+        - search
+      summary: Search dishes and menus by keyword
+      operationId: api.search.search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: The keyword to search for dishes
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+
+components:
+  schemas:
+    DishInput:
+      type: object
+      properties:
+        nativeLanguageCode:
+          type: string
+          description: "The native language/region of the dish."
+          format: bcp47
+        nativeName:
+          type: string
+          description: "The name of the dish, as it is natively called."
+        localizedNames:
+          type: object
+          description: "The localized names of the dish. This is represented as a strings dictionary, with key being the language code and value being the localized string."
+          additionalProperties:
+            type: string
+        localizedDescriptions:
+          type: object
+          description: "The localized descriptions of the dish. This is represented as a strings dictionary, with key being the language code and value being the localized string."
+          additionalProperties:
+            type: string
+        localizedWikipediaUrls:
+          type: object
+          description: "The localized Wikipedia URLs describing the dish. This is represented as a strings dictionary, with key being the language code and value being the localized string."
+          additionalProperties:
+            type: string
+        displayName:
+          type: string
+          description: "The name of the dish, in the user language (based on `Accept-Language`; TODO). Defaults to English language."
+        displayDescription:
+          type: string
+          description: "The description of the dish, in the user language (based on `Accept-Language`; TODO). Defaults to English language."
+        displayWikipediaUrl:
+          type: string
+          description: "The Wikipedia URL describing the dish, in the user language (based on `Accept-Language`; TODO). Defaults to English language."
+      required:
+        - nativeLanguageCode
+        - nativeName
+      example:
+        nativeLanguageCode: "zh-Hant"
+        nativeName: "蝦餃"
+        localizedNames:
+          "en": "har gow"
+          "zh-Hans": "虾饺"
+        localizedTitles:
+          "en": "steamed shrimp dumpling"
+        localizedDescriptions:
+          "en": "Har gow is a Cantonese dim sum consisting of steamed dumplings filled with shrimp encased in a translucent wheat starch wrapper, known for its sweet and briny flavor and tender, chewy texture."
+        localizedWikipediaUrls:
+          "en": "https://en.wikipedia.org/wiki/Har_gow"
+    Dish:
+      allOf:
+        - $ref: "#/components/schemas/DishInput"
+        - type: object
+          properties:
+            id:
+              type: string
+            dateCreated:
+              type: string
+              format: date-time
+            dateUpdated:
+              type: string
+              format: date-time
+            dishPhotos:
+              type: array
+              items:
+                $ref: "#/components/schemas/DishPhoto"
+      example:
+        id: "dish_1"
+        dateCreated: "2023-07-23T12:34:56Z"
+        dateUpdated: "2023-07-23T12:34:56Z"
+        $ref: "#/components/schemas/DishInput/example"
+        displayName: "har gow"
+        displayTitle: "steamed shrimp dumpling"
+        displayDescription: "Har gow is a Cantonese dim sum consisting of steamed dumplings filled with shrimp encased in a translucent wheat starch wrapper, known for its sweet and briny flavor and tender, chewy texture."
+        displayWikipediaUrl: "https://en.wikipedia.org/wiki/Har_gow"
+        dishPhotos:
+          - id: "dishPhoto_1"
+            dateCreated: "2023-07-23T12:34:56Z"
+            photoUrl: "https://example.com/dish_photo1.jpg"
+        nativeLanguageCode: "zh-Hant"
+        nativeName: "蝦餃"
+        localizedNames:
+          "en": "har gow"
+          "zh-Hans": "虾饺"
+        localizedTitles:
+          "en": "steamed shrimp dumpling"
+        localizedDescriptions:
+          "en": "Har gow is a Cantonese dim sum consisting of steamed dumplings filled with shrimp encased in a translucent wheat starch wrapper, known for its sweet and briny flavor and tender, chewy texture."
+        localizedWikipediaUrls:
+          "en": "https://en.wikipedia.org/wiki/Har_gow"
+
+    DishPhotoInput:
+      type: object
+      properties:
+        photoData:
+          type: string
+          format: binary
+          description: Photo data, in JPEG format
+      required:
+        - photoData
+      example:
+        photoData: [binary data]
+    DishPhoto:
+      allOf:
+        - $ref: "#/components/schemas/DishPhotoInput"
+        - type: object
+          properties:
+            id:
+              type: string
+            dateCreated:
+              type: string
+              format: date-time
+      example:
+        id: "dishPhoto_1"
+        dateCreated: "2023-07-23T12:34:56Z"
+        photoUrl: "https://example.com/dish_photo1.jpg"
+
+    MenuItem:
+      type: object
+      properties:
+        dishId:
+          type: string
+        # dish:
+        #   $ref: '#/components/schemas/Dish'
+        sectionTitle:
+          type: string
+          description: "The title of the menu section in which the dish appears."
+        description:
+          type: string
+          description: "The description of the dish as it appears on the menu."
+      required:
+        - dishId
+      example:
+        dishId: "dish_1"
+        # dish:
+        #   $ref: '#/components/schemas/Dish'
+        sectionTitle: "Dim Sum"
+        name: "Shrimp Dumpling"
+        description: "Delicate dumplings filled with plump shrimp and bamboo shoots, steamed to perfection."
+    MenuInput:
+      type: object
+      properties:
+        googleMapsPlaceId:
+          type: string
+        cuisineCodes:
+          type: string
+        languageCodes:
+          type: array
+          items:
+            type: string
+            format: bcp47
+        menuItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItem'
+      required:
+        - googleMapsPlaceId
+      example:        
+        googleMapsPlaceId: "placeId_xxx"
+        cuisineCodes:
+          - "cantonese"
+        languageCodes:
+          - "en-US"
+          - "zh-Hant"
+        menuItems:
+          - dishId: "dish_1"
+            sectionTitle: "Dim Sum"
+            name: "Shrimp Dumpling"
+            description: "Delicate dumplings filled with plump shrimp and bamboo shoots, steamed to perfection."
+          - dishId: "dish_2"
+            sectionTitle: "Dim Sum"
+            name: "Chicken Siu Mai"
+            description: "Exquisite blend of tender chicken, shrimp, and shiitake mushrooms, expertly steamed."
+          - dishId: "dish_3"
+            sectionTitle: "Dim Sum"
+            name: "Beef and Chive Dumplings"
+            description: "Savory beef, fresh chives, and a hint of aromatic sesame oil hand-wrapped and pan-fried to perfection."
+    Menu:
+      allOf:
+        - $ref: "#/components/schemas/MenuInput"
+        - type: object
+          properties:
+            id:
+              type: string
+            dateCreated:
+              type: string
+              format: date-time
+            dateUpdated:
+              type: string
+              format: date-time
+            # menuPhotoIds:
+            #   type: array
+            #   items:
+            #     type: string
+      example:        
+        id: "menu_1"
+        dateCreated: "2023-07-23T12:34:56Z"
+        dateUpdated: "2023-07-23T12:34:56Z"
+        # menuPhotoIds:
+        #   - "menuPhoto_1"
+        #   - "menuPhoto_2"
+        #   - "menuPhoto_3"
+        googleMapsPlaceId: "placeId_xxx"
+        cuisineCodes:
+          - "cantonese"
+        languageCodes:
+          - "en-US"
+          - "zh-Hant"
+        menuItems:
+          - dishId: "dish_1"
+            sectionTitle: "Dim Sum"
+            name: "Shrimp Dumpling"
+            description: "Delicate dumplings filled with plump shrimp and bamboo shoots, steamed to perfection."
+          - dishId: "dish_2"
+            sectionTitle: "Dim Sum"
+            name: "Chicken Siu Mai"
+            description: "Exquisite blend of tender chicken, shrimp, and shiitake mushrooms, expertly steamed."
+          - dishId: "dish_3"
+            sectionTitle: "Dim Sum"
+            name: "Beef and Chive Dumplings"
+            description: "Savory beef, fresh chives, and a hint of aromatic sesame oil hand-wrapped and pan-fried to perfection."
+
+    MenuPhotoInput:
+      type: object
+      properties:
+        photoData:
+          type: string
+          format: binary
+          description: Photo data, in JPEG format
+        googleMapsPlaceId:
+          type: string
+          description: "A place ID as used in Google Maps APIs. See https://developers.google.com/maps/documentation/places/web-service/place-id."
+        placeName:
+          type: string
+        placeCountryCode:
+          type: string
+          format: iso-3166-alpha-2
+        cuisineCodes:
+          type: string
+        languageCodes:
+          type: array
+          items:
+            type: string
+            format: bcp47
+      required:
+        - photoData
+        - googleMapsPlaceId
+        - placeName
+        - placeCountryCode
+      example:
+        photoData: "[binary data]"
+        googleMapsPlaceId: "placeId_xxx"
+        placeName: "Lei Garden"
+        placeCountryCode: "US"
+        cuisineCodes:
+          - "cantonese"
+        languageCodes:
+          - "en-US"
+          - "zh-Hant"
+    MenuPhoto:
+      allOf:
+        - $ref: "#/components/schemas/MenuPhotoInput"
+        - type: object
+          properties:
+            id:
+              type: string
+            dateCreated:
+              type: string
+              format: date-time
+            menuId:
+              type: string
+      example:
+        id: "menuPhoto_1"
+        dateCreated: "2023-07-23T12:34:56Z"
+        menuId: null
+        photoUrl: "https://example.com/menu_photo1.jpg"
+        googleMapsPlaceId: "placeId_xxx"
+        placeName: "Lei Garden"
+        placeCountryCode: "US"
+        cuisineCodes:
+          - "cantonese"
+        languageCodes:
+          - "en-US"
+          - "zh-Hant"
+
+    SearchResponse:
+      type: object
+      properties:
+        dishes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Dish"
+        menus:
+          type: array
+          items:
+            $ref: "#/components/schemas/Menu"
+      example:
+        dishes:
+          - id: "dish_1"
+            dateCreated: "2023-07-23T12:34:56Z"
+            dateUpdated: "2023-07-23T12:34:56Z"
+            $ref: "#/components/schemas/DishInput/example"
+            displayName: "har gow"
+            displayTitle: "steamed shrimp dumpling"
+            displayDescription: "Har gow is a Cantonese dim sum consisting of steamed dumplings filled with shrimp encased in a translucent wheat starch wrapper, known for its sweet and briny flavor and tender, chewy texture."
+            displayWikipediaUrl: "https://en.wikipedia.org/wiki/Har_gow"
+            dishPhotos:
+              - id: "dishPhoto_1"
+                dateCreated: "2023-07-23T12:34:56Z"
+                photoUrl: "https://example.com/dish_photo1.jpg"
+            nativeLanguageCode: "zh-Hant"
+            nativeName: "蝦餃"
+            localizedNames:
+              "en": "har gow"
+              "zh-Hans": "虾饺"
+            localizedTitles:
+              "en": "steamed shrimp dumpling"
+            localizedDescriptions:
+              "en": "Har gow is a Cantonese dim sum consisting of steamed dumplings filled with shrimp encased in a translucent wheat starch wrapper, known for its sweet and briny flavor and tender, chewy texture."
+            localizedWikipediaUrls:
+              "en": "https://en.wikipedia.org/wiki/Har_gow"
+        menus:
+          - id: "menu_1"
+            dateCreated: "2023-07-23T12:34:56Z"
+            dateUpdated: "2023-07-23T12:34:56Z"
+            # menuPhotoIds:
+            #   - "menuPhoto_1"
+            #   - "menuPhoto_2"
+            #   - "menuPhoto_3"
+            googleMapsPlaceId: "placeId_xxx"
+            cuisineCodes:
+              - "cantonese"
+            languageCodes:
+              - "en-US"
+              - "zh-Hant"
+            menuItems:
+              - dishId: "dish_1"
+                sectionTitle: "Dim Sum"
+                name: "Shrimp Dumpling"
+                description: "Delicate dumplings filled with plump shrimp and bamboo shoots, steamed to perfection."
+              - dishId: "dish_2"
+                sectionTitle: "Dim Sum"
+                name: "Chicken Siu Mai"
+                description: "Exquisite blend of tender chicken, shrimp, and shiitake mushrooms, expertly steamed."
+              - dishId: "dish_3"
+                sectionTitle: "Dim Sum"
+                name: "Beef and Chive Dumplings"
+                description: "Savory beef, fresh chives, and a hint of aromatic sesame oil hand-wrapped and pan-fried to perfection."
