@@ -22,3 +22,22 @@ $ docker push 826534809592.dkr.ecr.us-east-1.amazonaws.com/waiter-ecr:latest
 
 $ docker run --publish 8000:5000 waiter-server 
 The 8000 port can be replaced with something else
+
+# To deploy to AWS Elastic Beanstalk
+
+1. Install AWS Elastic Beanstalk CLI via Homebrew
+    brew install awsebcli
+
+2. Create the EB config and application
+
+    eb init food-tbd -r us-east-1 -p "Docker running on 64bit Amazon Linux 2023"
+    eb create food-tbd-waiter -i t4g.nano --sample \
+        --envvars ALGOLIA_SEARCH_API_KEY="xxx",APP_ID="Y50RDS26JS",EATS_DB_INDEX="dev_eats"
+
+3. Deploy this code
+
+    eb deploy
+
+4. Fix up the configuration from EB defaults. In [EB environment > Configuration > Instance traffic and scaling](https://us-east-1.console.aws.amazon.com/elasticbeanstalk/home?region=us-east-1#/environment/configuration/instance-traffic-scaling):
+
+    * Under Processes, change the health check path from default `/` to `/hello`.
