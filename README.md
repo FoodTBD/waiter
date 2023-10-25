@@ -31,8 +31,7 @@ The 8000 port can be replaced with something else
 2. Create the EB config and application
 
     eb init food-tbd -r us-east-1 -p "Docker running on 64bit Amazon Linux 2023"
-    eb create food-tbd-waiter -i t4g.nano --sample \
-        --envvars ALGOLIA_SEARCH_API_KEY="xxx",APP_ID="Y50RDS26JS",EATS_DB_INDEX="dev_eats"
+    eb create food-tbd-waiter -i t4g.nano --sample
 
 3. Deploy this code
 
