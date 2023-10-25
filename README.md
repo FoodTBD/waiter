@@ -33,10 +33,12 @@ The 8000 port can be replaced with something else
     eb init food-tbd -r us-east-1 -p "Docker running on 64bit Amazon Linux 2023"
     eb create food-tbd-waiter -i t4g.nano --sample
 
-3. Deploy this code
+3. Copy `dotenv.sample` to `.env` and fill in the secrets.
+
+4. Deploy this code
 
     eb deploy
 
-4. Fix up the configuration from EB defaults. In [EB environment > Configuration > Instance traffic and scaling](https://us-east-1.console.aws.amazon.com/elasticbeanstalk/home?region=us-east-1#/environment/configuration/instance-traffic-scaling):
+5. Fix up the configuration from EB defaults. In [EB environment > Configuration > Instance traffic and scaling](https://us-east-1.console.aws.amazon.com/elasticbeanstalk/home?region=us-east-1#/environment/configuration/instance-traffic-scaling):
 
     * Under Processes, change the health check path from default `/` to `/hello`.
