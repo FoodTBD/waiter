@@ -23,17 +23,17 @@ $ docker push 826534809592.dkr.ecr.us-east-1.amazonaws.com/waiter-ecr:latest
 $ docker run --publish 8000:5000 waiter-server 
 The 8000 port can be replaced with something else
 
+
 # To deploy to AWS Elastic Beanstalk
 
 1. Install AWS Elastic Beanstalk CLI via Homebrew
     brew install awsebcli
 
-2. Create the EB config and application
+2. Create the EB config and application (substitute your actual API key for XXX):
 
     eb init food-tbd -r us-east-1 -p "Docker running on 64bit Amazon Linux 2023"
-    eb create food-tbd-waiter -i t4g.nano --sample
-
-3. Copy `dotenv.sample` to `.env` and fill in the secrets.
+    eb create food-tbd-waiter -i t4g.nano --sample \
+        --envvars ALGOLIA_SEARCH_API_KEY="XXX"
 
 4. Deploy this code
 

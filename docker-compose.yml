@@ -4,7 +4,7 @@ services:
     ports:
       - "80:5000"
     environment:
-      - APP_ID="Y50RDS26JS"
-      - EATS_DB_INDEX="dev_eats"
+      - APP_ID=Y50RDS26JS
+      - EATS_DB_INDEX=dev_eats
     env_file:
       - .env
