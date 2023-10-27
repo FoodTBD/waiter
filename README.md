@@ -39,6 +39,11 @@ The 8000 port can be replaced with something else
 
     eb deploy
 
-5. Fix up the configuration from EB defaults. In [EB environment > Configuration > Instance traffic and scaling](https://us-east-1.console.aws.amazon.com/elasticbeanstalk/home?region=us-east-1#/environment/configuration/instance-traffic-scaling):
+5. In [AWS Certificate Manager](https://us-east-1.console.aws.amazon.com/acm/home?region=us-east-1), create a HTTPS certificate for `api.food-tbd.com`.  This requires creating a CNAME record for DNS verification on the DNS host.
 
+6. Also create a CNAME record to point `api.food-tbd.com` to the generated EB environment domain e.g. `food-tbd-waiter.eba-5ynepjcj.us-east-1.elasticbeanstalk.com`.
+
+7. Finally, fix up the EB environment configuration. In [EB environment > Configuration > Instance traffic and scaling](https://us-east-1.console.aws.amazon.com/elasticbeanstalk/home?region=us-east-1#/environment/configuration/instance-traffic-scaling):
+
+    * Under Listeners, add a listener for port 443, HTTPS, using the cert created in the previous step.
     * Under Processes, change the health check path from default `/` to `/hello`.
